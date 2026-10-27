@@ -1,0 +1,36 @@
+# Gera o instalador do Windows (versão desktop, offline) quando você pedir:
+#   gh workflow run instalador.yml
+# e publica o .exe na aba "Releases" do repositório.
+name: Gerar instalador
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Instalar dependências
+        run: npm install --no-audit --no-fund
+
+      - name: Gerar instalador
+        run: npm run dist
+
+      - name: Publicar na aba Releases
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSAO=$(node -p "require('./package.json').version")
+          gh release create "v${VERSAO}-build${{ github.run_number }}" instalador/*.exe \
+            --title "Gerador de Encartes ${VERSAO} (build ${{ github.run_number }})" \
+            --notes "Instalador gerado automaticamente a partir do commit ${{ github.sha }}."
