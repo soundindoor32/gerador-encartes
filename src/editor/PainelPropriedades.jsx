@@ -326,7 +326,8 @@ function PropsProduto({ el, mudar, acoes }) {
             { valor: 'selo', nome: 'Caixa com selo redondo no canto' },
             { valor: 'etiqueta', nome: 'Sem caixa, etiqueta de preço sobre a foto' },
             { valor: 'fita', nome: 'Foto ao lado, preço numa fita' },
-            { valor: 'caixa', nome: 'Foto em caixa, nome e preço embaixo' }
+            { valor: 'caixa', nome: 'Foto em caixa, nome e preço embaixo' },
+            { valor: 'horizontal', nome: 'Caixa horizontal: foto ao lado, preço grande (TV)' }
           ]} />
         {s.variante === 'fita' && (
           <Opcoes rotulo="Lado da foto" valor={s.lado || 'esquerda'} aoMudar={v => mudarEstilo({ lado: v })}
@@ -341,7 +342,9 @@ function PropsProduto({ el, mudar, acoes }) {
             <Cor rotulo={s.variante === 'fita' ? 'Cor da fita' : s.variante === 'etiqueta' ? 'Cor da etiqueta' : 'Fundo do preço'} valor={s.corPrecoFundo} aoMudar={v => mudarEstilo({ corPrecoFundo: v }, 'cpf')} />
           )}
           <Cor rotulo="Número do preço" valor={s.corPrecoTexto} aoMudar={v => mudarEstilo({ corPrecoTexto: v }, 'cpt')} />
-          {s.variante === 'faixa' && <Cor rotulo="Caixa do R$" valor={s.corDestaque} aoMudar={v => mudarEstilo({ corDestaque: v }, 'cde')} />}
+          {(s.variante === 'faixa' || s.variante === 'horizontal') && (
+            <Cor rotulo={s.variante === 'horizontal' ? 'Cor do R$ e da unidade' : 'Caixa do R$'} valor={s.corDestaque} aoMudar={v => mudarEstilo({ corDestaque: v }, 'cde')} />
+          )}
         </div>
         <Fonte familia={s.fonteNome} aoMudarFamilia={v => mudarEstilo({ fonteNome: v })} />
         <label>

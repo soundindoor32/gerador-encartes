@@ -436,3 +436,16 @@ textarea { resize: vertical; }
 }
 .previa-real { border: 1px solid var(--linha); background: #fff; overflow: hidden; border-radius: 3px; }
 .grade-modelos { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.encarte-cartao { position: relative; }
+.encarte-cartao.marcado { border-color: var(--vermelho); box-shadow: 0 0 0 2px var(--vermelho); }
+.marcar-encarte { position: absolute; top: 8px; left: 8px; z-index: 1; background: rgba(255,255,255,.92); border-radius: 5px; padding: 4px 6px; }
+.marcar-encarte input { width: 18px; height: 18px; cursor: pointer; }
+.slides-produtos { margin-top: 18px; border: 1px solid var(--linha); border-radius: 8px; }
+.slides-topo { display: flex; gap: 8px; align-items: center; padding: 10px; border-bottom: 1px solid var(--linha); flex-wrap: wrap; background: var(--superficie-2); }
+.slides-topo select { width: auto; }
+.resumo-slides { margin-left: auto; font-size: 13px; color: var(--tinta-2); }
+.lista-slides { list-style: none; margin: 0; padding: 6px 10px; max-height: 300px; overflow-y: auto; }
+.lista-slides li { padding: 4px 0; border-bottom: 1px solid #F0F2F5; }
+.lista-slides .check { width: 100%; }
+.lista-slides .nome { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.lista-slides .preco-tag .inteiro { font-size: 17px; }

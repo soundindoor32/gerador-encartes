@@ -419,7 +419,7 @@ const canais = {
 
   // No navegador, "salvar" é baixar o arquivo
   async 'exportar:salvar'(bytes, nome, extensao) {
-    const tipos = { png: 'image/png', jpg: 'image/jpeg', pdf: 'application/pdf' };
+    const tipos = { png: 'image/png', jpg: 'image/jpeg', pdf: 'application/pdf', zip: 'application/zip' };
     const arquivo = `${nome}.${extensao}`;
     baixar(new Blob([bytes], { type: tipos[extensao] }), arquivo);
     return arquivo;
@@ -443,7 +443,11 @@ const canais = {
     const r = ok(await supabase().auth.signUp({ email, password: senha, options: { emailRedirectTo: window.location.href.split('#')[0] } }));
     return { precisaConfirmar: !r.session };
   },
-  async 'conta:sair'() { await supabase().auth.signOut(); }
+  async 'conta:sair'() { await supabase().auth.signOut(); },
+  async 'conta:senha'(nova) {
+    if (!nova || nova.length < 8) throw new Error('Use uma senha com pelo menos 8 caracteres.');
+    ok(await supabase().auth.updateUser({ password: nova }));
+  }
 };
 
 export async function chamarNuvem(canal, ...args) {

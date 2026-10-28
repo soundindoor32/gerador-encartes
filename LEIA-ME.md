@@ -31,6 +31,13 @@ git push
 gh run watch
 ```
 
+### 2b. Modo equipe (catálogo compartilhado)
+Rode também o arquivo `supabase/equipe.sql` no SQL Editor. Depois disso, todas
+as contas do projeto veem o mesmo catálogo, lojas, modelos e encartes.
+Para dar acesso a alguém: **Authentication → Users → Add user → Create new user**,
+informe e-mail e senha e marque **Auto Confirm User**. A pessoa pode trocar a
+senha depois em **Conta e backup**.
+
 ### 3. Primeiro acesso
 1. Abra `https://SEU-USUARIO.github.io/gerador-encartes/` e clique em **Criar conta**.
 2. Confirme pelo e-mail que o Supabase enviar e entre.
@@ -56,6 +63,14 @@ Para atualizar o site depois: extraia o zip novo por cima, `git add .`,
 
 App desktop para Windows, 100% offline. Tudo fica numa pasta escolhida por você
 (sugestão: `D:\Encartes`): banco SQLite, fotos dos produtos, fontes e exportações.
+
+## Conteúdo para TV indoor
+
+- Formatos **TV deitada (1920 × 1080)** e **TV em pé (1080 × 1920)**
+- Modelos de TV: 6 ofertas, oferta do dia, setor com 4 ofertas, TV em pé com 4 ofertas
+- **Slides para TV** (tela Encartes): escolha o modelo e os produtos; o app cria
+  quantas telas forem necessárias e baixa todas num ZIP, prontas para o SoundIndoor
+- Exportação em lote: marque vários encartes na lista e exporte em um ZIP
 
 ## Novo na fase 2: editor de encartes
 

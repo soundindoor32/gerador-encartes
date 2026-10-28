@@ -6,7 +6,7 @@ import { Elemento, imagensCarregando } from './Elementos.jsx';
 import PainelEsquerdo from './PainelEsquerdo.jsx';
 import PainelPropriedades from './PainelPropriedades.jsx';
 import { carregarFontes } from './fontes.js';
-import { criarElemento, camposDoProduto, sincronizarCard, clonarElementos, esvaziarCards, ESTILO_CARD_PADRAO } from './documento.js';
+import { criarElemento, camposDoProduto, sincronizarCard, clonarElementos, esvaziarCards, cardsVazios, preencherDocumento, ESTILO_CARD_PADRAO } from './documento.js';
 import { gerarArquivo, miniatura } from './exportar.js';
 
 const LIMITE_HISTORICO = 120;
@@ -291,22 +291,12 @@ export default function Editor({ encarteId, aoSair, avisar }) {
       } catch (e) { avisar(e.message, 'erro'); }
     },
     adicionarProdutos(produtos) {
-      const d = docRef.current;
-      const vazios = d.elementos
-        .filter(e => e.tipo === 'produto' && !e.oculto && !e.produtoId && !e.campos.nome)
-        .sort((a, b) => (Math.abs(a.y - b.y) > 20 ? a.y - b.y : a.x - b.x));
+      const vazios = cardsVazios(docRef.current);
       if (!vazios.length) {
         avisar('Não há cards vazios. Insira um card (aba Inserir) ou esvazie algum.', 'atencao');
         return;
       }
-      const preencher = {};
-      produtos.slice(0, vazios.length).forEach((p, i) => { preencher[vazios[i].id] = p; });
-      mudarDoc(dd => ({
-        ...dd,
-        elementos: dd.elementos.map(e => (preencher[e.id]
-          ? { ...e, produtoId: preencher[e.id].id, editados: [], campos: camposDoProduto(preencher[e.id]) }
-          : e))
-      }));
+      mudarDoc(dd => preencherDocumento(dd, produtos));
       const sobra = produtos.length - vazios.length;
       if (produtos.length > 1) {
         avisar(sobra > 0

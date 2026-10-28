@@ -246,9 +246,93 @@ function churrascoFogo() {
   return doc;
 }
 
+// ================= Modelos para TV =================
+const estiloHorizontal = (extra = {}) => ({
+  ...ESTILO_CARD_PADRAO, variante: 'horizontal', fonteNome: 'Montserrat', fontePreco: 'Montserrat',
+  tamanhoNome: 38, tamanhoDescricao: 22, raio: 22, corNome: AZUL, corDescricao: '#3A4255',
+  corPrecoFundo: AMARELO, corPrecoTexto: VERMELHO, corDestaque: AZUL, corBorda: '#E3E8F2', ...extra
+});
+
+// TV deitada com 6 ofertas
+function tvSeisOfertas() {
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'tv'), '#EEF2F8');
+  const E = doc.elementos;
+  E.push(el('raios', { x: 0, y: 0, w: 1920, h: 200, cor1: '#0B3A94', cor2: '#1650C2', quantidade: 40, centroX: 0.5, centroY: 0.5, bloqueado: true, nome: 'Fundo do topo' }));
+  E.push(el('retangulo', { x: 0, y: 0, w: 380, h: 200, cor: BRANCO, raio: 0, bloqueado: true, nome: 'Fundo do logo' }));
+  E.push(el('poligono', { x: 380, y: 0, w: 80, h: 200, pontos: [[0, 0], [1, 0], [0, 1]], cor: BRANCO, bloqueado: true, nome: 'Ponta do fundo do logo' }));
+  E.push(el('logo', { x: 30, y: 20, w: 330, h: 160 }));
+  E.push(titulo({ x: 470, y: 50, w: 1100, texto: 'OFERTAS DO DIA', tamanho: 92, cor: AMARELO, contornoLargura: 11, sombraY: 7 }));
+  E.push(el('elipse', { x: 1590, y: 14, w: 300, h: 172, cor: AMARELO, bordaCor: BRANCO, bordaLargura: 6, sombra: true, nome: 'Selo de validade' }));
+  E.push(el('texto', { x: 1600, y: 58, w: 280, texto: 'VÁLIDO ATÉ\n00/00', tamanho: 34, peso: '900', cor: AZUL, alinhamento: 'center', alturaLinha: 1.05 }));
+  for (let l = 0; l < 2; l += 1) {
+    for (let c = 0; c < 3; c += 1) {
+      E.push(el('produto', { x: 40 + c * 623, y: 224 + l * 392, w: 593, h: 372, estilo: estiloHorizontal(), nome: `oferta ${l * 3 + c + 1}` }));
+    }
+  }
+  E.push(el('retangulo', { x: 0, y: 1012, w: 1920, h: 68, cor: AZUL, nome: 'Rodapé' }));
+  E.push(el('texto', { x: 40, y: 1027, w: 1840, texto: 'OFERTAS VÁLIDAS ENQUANTO DURAREM OS ESTOQUES', tamanho: 32, peso: '800', cor: BRANCO, alinhamento: 'center' }));
+  return doc;
+}
+
+// TV deitada com um produto em destaque
+function tvOfertaDoDia() {
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'tv'), '#C8102E');
+  const E = doc.elementos;
+  E.push(el('raios', { x: 0, y: 0, w: 1920, h: 1080, cor1: '#B00D22', cor2: '#D7261E', quantidade: 44, centroX: 0.5, centroY: 0.55, bloqueado: true, nome: 'Fundo' }));
+  E.push(el('logo', { x: 40, y: 24, w: 300, h: 150, corTexto: BRANCO }));
+  E.push(titulo({ x: 360, y: 34, w: 1200, texto: 'OFERTA DO DIA', tamanho: 130, cor: AMARELO, contornoCor: '#5A0A12', contornoLargura: 12, sombraCor: '#3A0008', sombraY: 9 }));
+  E.push(el('produto', {
+    x: 140, y: 220, w: 1640, h: 760, nome: 'produto em destaque',
+    estilo: estiloHorizontal({ tamanhoNome: 88, tamanhoDescricao: 42, raio: 36, corPrecoTexto: VERMELHO })
+  }));
+  E.push(el('texto', { x: 40, y: 1012, w: 1840, texto: 'Oferta válida somente hoje ou enquanto durarem os estoques', tamanho: 30, peso: '700', cor: BRANCO, alinhamento: 'center' }));
+  return doc;
+}
+
+// TV deitada para um setor (hortifrúti, açougue...) com 4 ofertas em fita
+function tvSetor() {
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'tv'), '#F6F6F1');
+  const E = doc.elementos;
+  const VERDE = '#7DB548', VERDE_ESC = '#3F7A1F';
+  E.push(el('poligono', { x: 0, y: 0, w: 1920, h: 210, pontos: [[0, 0], [1, 0], [1, 0.7], [0, 1]], cor: VERDE, bloqueado: true, nome: 'Faixa verde do topo' }));
+  E.push(el('poligono', { x: 1500, y: 860, w: 420, h: 220, pontos: [[1, 0], [1, 1], [0, 1]], cor: VERDE, opacidade: 0.85, bloqueado: true, nome: 'Canto verde' }));
+  E.push(el('texto', { x: 40, y: 10, w: 560, texto: 'Show de ofertas', fonte: 'Kaushan Script', peso: '400', tamanho: 56, cor: BRANCO }));
+  E.push(el('texto', { x: 40, y: 64, w: 1100, texto: 'HORTIFRÚTI', fonte: 'Anton', peso: '400', tamanho: 120, cor: BRANCO, alturaLinha: 1, sombraCor: VERDE_ESC, sombraY: 5 }));
+  E.push(el('logo', { x: 1560, y: 18, w: 320, h: 130, corTexto: BRANCO }));
+  const estilo = {
+    ...ESTILO_CARD_PADRAO, variante: 'fita', fonteNome: 'Oswald', tamanhoNome: 64, tamanhoDescricao: 30,
+    corNome: VERDE_ESC, corDescricao: VERDE_ESC, corPrecoFundo: VERDE, corPrecoTexto: BRANCO, fontePreco: 'Anton', maiusculas: true
+  };
+  for (let l = 0; l < 2; l += 1) {
+    E.push(el('produto', { x: 30, y: 240 + l * 400, w: 900, h: 380, estilo: { ...estilo, lado: 'esquerda' }, nome: `setor ${l * 2 + 1}` }));
+    E.push(el('produto', { x: 990, y: 240 + l * 400, w: 900, h: 380, estilo: { ...estilo, lado: 'direita' }, nome: `setor ${l * 2 + 2}` }));
+  }
+  return doc;
+}
+
+// TV em pé com 4 ofertas
+function tvVerticalQuatro() {
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'tv-vertical'), '#EEF2F8');
+  const E = doc.elementos;
+  E.push(el('raios', { x: 0, y: 0, w: 1080, h: 340, cor1: '#0B3A94', cor2: '#1650C2', quantidade: 32, centroX: 0.5, centroY: 0.2, bloqueado: true, nome: 'Fundo do topo' }));
+  E.push(el('elipse', { x: 340, y: -140, w: 400, h: 300, cor: BRANCO, bloqueado: true, nome: 'Fundo do logo' }));
+  E.push(el('logo', { x: 400, y: 10, w: 280, h: 130 }));
+  E.push(titulo({ x: 40, y: 170, w: 1000, texto: 'OFERTAS', tamanho: 140, cor: AMARELO, contornoLargura: 12, sombraY: 8 }));
+  for (let i = 0; i < 4; i += 1) {
+    E.push(el('produto', { x: 40, y: 370 + i * 375, w: 1000, h: 355, estilo: estiloHorizontal({ tamanhoNome: 46, tamanhoDescricao: 26 }), nome: `oferta ${i + 1}` }));
+  }
+  E.push(el('retangulo', { x: 0, y: 1872, w: 1080, h: 48, cor: AZUL, nome: 'Rodapé' }));
+  E.push(el('texto', { x: 20, y: 1882, w: 1040, texto: 'OFERTAS VÁLIDAS ENQUANTO DURAREM OS ESTOQUES', tamanho: 26, peso: '800', cor: BRANCO, alinhamento: 'center' }));
+  return doc;
+}
+
 export const MODELOS_EMBUTIDOS = [
   { id: 'casa-vertical', nome: 'Sua Casa, vertical com preço em faixa', criar: casaVertical },
   { id: 'casa-quadrado', nome: 'Sua Casa, quadrado com preço em selo', criar: casaQuadrado },
+  { id: 'tv-seis', nome: 'TV deitada: 6 ofertas', criar: tvSeisOfertas, tv: true },
+  { id: 'tv-destaque', nome: 'TV deitada: oferta do dia', criar: tvOfertaDoDia, tv: true },
+  { id: 'tv-setor', nome: 'TV deitada: setor com 4 ofertas', criar: tvSetor, tv: true },
+  { id: 'tv-vertical', nome: 'TV em pé: 4 ofertas', criar: tvVerticalQuatro, tv: true },
   { id: 'carne-grade', nome: 'Fim de semana da Carne, grade 4 × 4', criar: carneGrade },
   { id: 'quarta-verde', nome: 'Quarta Verde, duas colunas com fita', criar: quartaVerde },
   { id: 'churrasco-fogo', nome: 'Churrasco no fogo, caixas brancas', criar: churrascoFogo },

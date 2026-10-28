@@ -5,6 +5,178 @@ import { Stage, Layer, Rect } from 'react-konva';
 import { MODELOS_EMBUTIDOS } from '../editor/modelos/embutidos.js';
 import { Elemento } from '../editor/Elementos.jsx';
 import { carregarFontes } from '../editor/fontes.js';
+import { cardsVazios, preencherDocumento } from '../editor/documento.js';
+import { renderizarDocumento, sincronizarComCatalogo, dataUrlParaBytes } from '../editor/renderizar.jsx';
+import { criarZip } from '../editor/zip.js';
+import PrecoTag from '../components/PrecoTag.jsx';
+
+const nomeDeArquivo = t => (t || 'encarte').replace(/[\\/:*?"<>|]+/g, '-').trim();
+
+// Exporta vários encartes num único ZIP (TV em resolução nativa, impressos em 2x)
+async function exportarEmLote(ids, avisar, aoProgresso) {
+  const lojas = await api('lojas:listar');
+  const arquivos = [];
+  for (let i = 0; i < ids.length; i += 1) {
+    aoProgresso?.(i + 1, ids.length);
+    const e = await api('encartes:obter', ids[i]);
+    const doc = await sincronizarComCatalogo(e.documento);
+    const escala = doc.largura >= 1900 || doc.altura >= 1900 ? 1 : 2;
+    const url = await renderizarDocumento(doc, { loja: lojas.find(l => l.id === e.loja_id) || null, escala });
+    arquivos.push({ nome: `${String(i + 1).padStart(2, '0')} - ${nomeDeArquivo(e.titulo)}.png`, bytes: dataUrlParaBytes(url) });
+  }
+  const zip = criarZip(arquivos);
+  const caminho = await api('exportar:salvar', zip, `encartes-${new Date().toISOString().slice(0, 10)}`, 'zip');
+  if (caminho) avisar(`${arquivos.length} imagem(ns) exportada(s): ${caminho}`);
+}
+
+function SlidesTV({ aoFechar, aoConcluir, avisar }) {
+  const tv = MODELOS_EMBUTIDOS.filter(m => m.tv);
+  const outros = MODELOS_EMBUTIDOS.filter(m => !m.tv && !m.branco);
+  const [titulo, setTitulo] = useState('Ofertas');
+  const [lojaId, setLojaId] = useState('');
+  const [lojas, setLojas] = useState([]);
+  const [meus, setMeus] = useState([]);
+  const [modelo, setModelo] = useState({ tipo: 'embutido', id: tv[0].id });
+  const [categorias, setCategorias] = useState([]);
+  const [categoriaId, setCategoriaId] = useState('');
+  const [produtos, setProdutos] = useState([]);
+  const [marcados, setMarcados] = useState(new Set());
+  const [espacos, setEspacos] = useState(0);
+  const [progresso, setProgresso] = useState(null);
+  const [criados, setCriados] = useState(null);
+
+  useEffect(() => {
+    api('lojas:listar').then(setLojas).catch(() => {});
+    api('categorias:listar').then(setCategorias).catch(() => {});
+    api('modelos:listar').then(setMeus).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    api('produtos:listar', { categoriaId }).then(r => {
+      setProdutos(r.itens);
+      setMarcados(new Set(r.itens.map(p => p.id)));
+    }).catch(e => avisar(e.message, 'erro'));
+  }, [categoriaId, avisar]);
+
+  async function docDoModelo() {
+    if (modelo.tipo === 'embutido') return MODELOS_EMBUTIDOS.find(m => m.id === modelo.id).criar();
+    return (await api('modelos:obter', modelo.id)).documento;
+  }
+
+  useEffect(() => {
+    let vivo = true;
+    docDoModelo().then(d => vivo && setEspacos(cardsVazios(d).length)).catch(() => setEspacos(0));
+    return () => { vivo = false; };
+  }, [modelo]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const escolhidos = produtos.filter(p => marcados.has(p.id));
+  const totalSlides = espacos ? Math.ceil(escolhidos.length / espacos) : 0;
+
+  async function gerar() {
+    try {
+      const loja = lojas.find(l => l.id === Number(lojaId)) || null;
+      const ids = [];
+      for (let i = 0; i < totalSlides; i += 1) {
+        setProgresso(`Criando tela ${i + 1} de ${totalSlides}…`);
+        const base = await docDoModelo();
+        const doc = preencherDocumento(base, escolhidos.slice(i * espacos, (i + 1) * espacos));
+        const mini = await renderizarDocumento(doc, { loja, escala: 300 / doc.largura, tipo: 'jpg', qualidade: 0.72 });
+        ids.push(await api('encartes:salvar', {
+          titulo: totalSlides > 1 ? `${titulo.trim() || 'Ofertas'} ${i + 1}/${totalSlides}` : (titulo.trim() || 'Ofertas'),
+          loja_id: loja?.id ?? null, documento: doc, miniatura: mini
+        }));
+      }
+      setProgresso(null);
+      setCriados(ids);
+      aoConcluir();
+    } catch (e) {
+      setProgresso(null);
+      avisar(e.message, 'erro');
+    }
+  }
+
+  async function exportarCriados() {
+    try {
+      await exportarEmLote(criados, avisar, (i, n) => setProgresso(`Exportando ${i} de ${n}…`));
+    } catch (e) { avisar(e.message, 'erro'); }
+    setProgresso(null);
+  }
+
+  if (criados) {
+    return (
+      <Modal titulo="Slides criados" aoFechar={aoFechar}
+        rodape={<>
+          <button className="botao" onClick={aoFechar}>Fechar</button>
+          <button className="botao primario" onClick={exportarCriados} disabled={!!progresso}>{progresso || `Baixar as ${criados.length} telas (ZIP)`}</button>
+        </>}>
+        <p>{criados.length} tela(s) criada(s). Elas aparecem na lista de encartes, onde você pode abrir e ajustar cada uma.</p>
+        <p className="ajuda">As telas de TV saem em 1920 × 1080 (ou 1080 × 1920 em pé), o tamanho exato da TV Full HD.</p>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal
+      titulo="Slides para TV"
+      aoFechar={aoFechar}
+      largo
+      rodape={<>
+        <button className="botao" onClick={aoFechar}>Cancelar</button>
+        <button className="botao primario" onClick={gerar} disabled={!!progresso || !totalSlides}>
+          {progresso || (totalSlides ? `Criar ${totalSlides} tela(s)` : 'Escolha os produtos')}
+        </button>
+      </>}
+    >
+      <div className="form-grade">
+        <label>Nome das telas
+          <input value={titulo} onChange={e => setTitulo(e.target.value)} placeholder="Ex.: Açougue da semana" />
+        </label>
+        <label>Loja (logo)
+          <select value={lojaId} onChange={e => setLojaId(e.target.value)}>
+            <option value="">Nenhuma</option>
+            {lojas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
+          </select>
+        </label>
+        <label className="ocupa-2">Modelo
+          <select
+            value={`${modelo.tipo}:${modelo.id}`}
+            onChange={e => { const [tipo, id] = e.target.value.split(':'); setModelo({ tipo, id: tipo === 'meu' ? Number(id) : id }); }}
+          >
+            <optgroup label="Para TV">{tv.map(m => <option key={m.id} value={`embutido:${m.id}`}>{m.nome}</option>)}</optgroup>
+            {meus.length > 0 && <optgroup label="Meus modelos">{meus.map(m => <option key={m.id} value={`meu:${m.id}`}>{m.nome}</option>)}</optgroup>}
+            <optgroup label="Impressos">{outros.map(m => <option key={m.id} value={`embutido:${m.id}`}>{m.nome}</option>)}</optgroup>
+          </select>
+        </label>
+      </div>
+
+      <div className="slides-produtos">
+        <div className="slides-topo">
+          <select value={categoriaId} onChange={e => setCategoriaId(e.target.value)}>
+            <option value="">Todas as categorias</option>
+            {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+          </select>
+          <button className="botao pequeno" onClick={() => setMarcados(new Set(produtos.map(p => p.id)))}>Marcar todos</button>
+          <button className="botao pequeno" onClick={() => setMarcados(new Set())}>Desmarcar</button>
+          <span className="resumo-slides">
+            {escolhidos.length} produto(s), {espacos} por tela: <strong>{totalSlides} tela(s)</strong>
+          </span>
+        </div>
+        <ul className="lista-slides">
+          {produtos.map(p => (
+            <li key={p.id}>
+              <label className="check">
+                <input type="checkbox" checked={marcados.has(p.id)}
+                  onChange={() => setMarcados(m => { const n = new Set(m); n.has(p.id) ? n.delete(p.id) : n.add(p.id); return n; })} />
+                <span className="nome">{p.nome}</span>
+                <PrecoTag preco={p.preco} unidade={p.unidade} />
+              </label>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Modal>
+  );
+}
 
 // Miniatura real do modelo, desenhada com o mesmo motor do editor
 const docsDosModelos = new Map();
@@ -144,7 +316,17 @@ function NovoEncarte({ aoFechar, aoCriar, avisar }) {
 export default function Encartes({ avisar, abrirEditor }) {
   const [encartes, setEncartes] = useState(null);
   const [novo, setNovo] = useState(false);
+  const [slides, setSlides] = useState(false);
   const [excluindo, setExcluindo] = useState(null);
+  const [marcados, setMarcados] = useState(new Set());
+  const [exportando, setExportando] = useState(null);
+
+  async function exportarMarcados() {
+    try {
+      await exportarEmLote([...marcados], avisar, (i, n) => setExportando(`Exportando ${i} de ${n}…`));
+    } catch (e) { avisar(e.message, 'erro'); }
+    setExportando(null);
+  }
 
   const carregar = useCallback(() => {
     api('encartes:listar').then(setEncartes).catch(e => avisar(e.message, 'erro'));
@@ -162,6 +344,7 @@ export default function Encartes({ avisar, abrirEditor }) {
   async function excluir() {
     try {
       await api('encartes:excluir', excluindo.id);
+      setMarcados(m => { const n = new Set(m); n.delete(excluindo.id); return n; });
       avisar('Encarte excluído.');
       setExcluindo(null);
       carregar();
@@ -178,6 +361,12 @@ export default function Encartes({ avisar, abrirEditor }) {
           <p className="subtitulo">Os preços são atualizados do catálogo sempre que você abre um encarte.</p>
         </div>
         <div className="acoes">
+          {marcados.size > 0 && (
+            <button className="botao" onClick={exportarMarcados} disabled={!!exportando}>
+              {exportando || `Exportar ${marcados.size} selecionado(s) (ZIP)`}
+            </button>
+          )}
+          <button className="botao" onClick={() => setSlides(true)}>Slides para TV</button>
           <button className="botao primario" onClick={() => setNovo(true)}>Novo encarte</button>
         </div>
       </header>
@@ -191,7 +380,11 @@ export default function Encartes({ avisar, abrirEditor }) {
       ) : (
         <ul className="grade-encartes">
           {encartes.map(e => (
-            <li key={e.id} className="encarte-cartao">
+            <li key={e.id} className={`encarte-cartao ${marcados.has(e.id) ? 'marcado' : ''}`}>
+              <label className="marcar-encarte" title="Selecionar para exportar">
+                <input type="checkbox" checked={marcados.has(e.id)}
+                  onChange={() => setMarcados(m => { const n = new Set(m); n.has(e.id) ? n.delete(e.id) : n.add(e.id); return n; })} />
+              </label>
               <button className="encarte-abrir" onClick={() => abrirEditor(e.id)} aria-label={`Abrir ${e.titulo}`}>
                 {e.miniatura ? <img src={e.miniatura} alt="" /> : <div className="sem-miniatura">sem prévia</div>}
               </button>
@@ -209,6 +402,7 @@ export default function Encartes({ avisar, abrirEditor }) {
         </ul>
       )}
 
+      {slides && <SlidesTV avisar={avisar} aoFechar={() => setSlides(false)} aoConcluir={carregar} />}
       {novo && <NovoEncarte avisar={avisar} aoFechar={() => setNovo(false)} aoCriar={id => { setNovo(false); abrirEditor(id); }} />}
 
       {excluindo && (

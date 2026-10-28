@@ -461,6 +461,47 @@ function CardCaixa({ el, exportando, realcado, nome }) {
   );
 }
 
+// Estilo "horizontal": caixa com foto à esquerda, nome e preço à direita (TV)
+function CardHorizontal({ el, exportando, realcado, nome }) {
+  const { w, h, estilo: s, campos } = el;
+  const pad = Math.max(10, h * 0.06);
+  const pesoNome = pesoAte(s.fonteNome, '900');
+  const xDir = w * 0.47;
+  const wDir = w - xDir - pad;
+  const hPreco = h * 0.36;
+  const yPreco = h - pad - hPreco;
+  const propsNome = {
+    text: nome, width: wDir, fontFamily: s.fonteNome, fontStyle: pesoNome, fontSize: s.tamanhoNome,
+    lineHeight: 1.05, wrap: 'word', ellipsis: true, height: s.tamanhoNome * 1.05 * 2 + 1
+  };
+  const maiorPalavra = Math.max(1, ...nome.split(/\s+/).map(p => larguraTexto(p, s.tamanhoNome, s.fonteNome, pesoNome)));
+  if (maiorPalavra > wDir) {
+    propsNome.fontSize = Math.max(s.tamanhoNome * 0.5, (s.tamanhoNome * wDir * 0.98) / maiorPalavra);
+    propsNome.height = propsNome.fontSize * 1.05 * 2 + 1;
+  }
+  const hNome = Math.min(alturaTexto({ ...propsNome, height: undefined }), propsNome.height);
+  const espacoDesc = yPreco - (pad + hNome) - 8;
+  const propsDesc = {
+    text: campos.descricao || '', width: wDir, fontFamily: s.fonteNome, fontStyle: pesoAte(s.fonteNome, '600'),
+    fontSize: s.tamanhoDescricao, lineHeight: 1.15, wrap: 'word', ellipsis: true,
+    height: Math.max(0, Math.min(s.tamanhoDescricao * 1.15 * 2 + 1, espacoDesc))
+  };
+  return (
+    <>
+      <Rect width={w} height={h} fill={s.corFundo} cornerRadius={s.raio} stroke={realcado ? '#D7261E' : s.corBorda}
+        strokeWidth={realcado ? 3 : 1.5} shadowColor="#0A1530" shadowBlur={14} shadowOpacity={0.18} shadowOffsetY={4} />
+      <FotoCard src={campos.imagem} x={pad} y={pad} w={w * 0.44} h={h - pad * 2} exportando={exportando} />
+      <Text {...propsNome} x={xDir} y={pad} fill={s.corNome} />
+      {s.mostrarDescricao && campos.descricao && propsDesc.height > s.tamanhoDescricao && (
+        <Text {...propsDesc} x={xDir} y={pad + hNome + 6} fill={s.corDescricao} />
+      )}
+      <Rect x={xDir} y={yPreco} width={wDir} height={hPreco} fill={s.corPrecoFundo} cornerRadius={Math.min(16, s.raio)} />
+      <PrecoEmLinha preco={campos.preco} unidade={campos.unidade} x={xDir} y={yPreco} largura={wDir} altura={hPreco}
+        cor={s.corPrecoTexto} fonte={s.fontePreco} mostrarRS corRS={s.corDestaque} corUn={s.corDestaque} unidadeEmbaixo />
+    </>
+  );
+}
+
 export function CardProduto({ el, exportando, realcado }) {
   const { w, h, estilo: s, campos } = el;
   const vazio = !campos.nome && !campos.imagem && (campos.preco === null || campos.preco === undefined);
@@ -473,6 +514,7 @@ export function CardProduto({ el, exportando, realcado }) {
   if (s.variante === 'etiqueta') return <CardEtiqueta el={el} exportando={exportando} realcado={realcado} nome={nome} />;
   if (s.variante === 'fita') return <CardFita el={el} exportando={exportando} realcado={realcado} nome={nome} />;
   if (s.variante === 'caixa') return <CardCaixa el={el} exportando={exportando} realcado={realcado} nome={nome} />;
+  if (s.variante === 'horizontal') return <CardHorizontal el={el} exportando={exportando} realcado={realcado} nome={nome} />;
 
   const pad = Math.max(8, w * 0.05);
   const selo = s.variante === 'selo';

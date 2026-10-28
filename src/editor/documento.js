@@ -9,14 +9,16 @@ export const FORMATOS = [
   { id: 'a4', nome: 'Folha A4', largura: 1240, altura: 1754 },
   { id: 'post', nome: 'Post quadrado (Instagram)', largura: 1080, altura: 1080 },
   { id: 'retrato', nome: 'Post retrato (4:5)', largura: 1080, altura: 1350 },
-  { id: 'story', nome: 'Story / Status (9:16)', largura: 1080, altura: 1920 }
+  { id: 'story', nome: 'Story / Status (9:16)', largura: 1080, altura: 1920 },
+  { id: 'tv', nome: 'TV deitada (16:9)', largura: 1920, altura: 1080 },
+  { id: 'tv-vertical', nome: 'TV em pé (9:16)', largura: 1080, altura: 1920 }
 ];
 
 let contador = 0;
 export const novoId = () => `e${Date.now().toString(36)}${(contador++).toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 
 export const ESTILO_CARD_PADRAO = {
-  variante: 'faixa',          // 'faixa' | 'selo' | 'etiqueta' | 'fita' | 'caixa'
+  variante: 'faixa',          // 'faixa' | 'selo' | 'etiqueta' | 'fita' | 'caixa' | 'horizontal'
   lado: 'esquerda',           // card 'fita': lado da foto
   corFundo: '#FFFFFF',
   corBorda: '#D8DEE9',
@@ -97,6 +99,26 @@ export function sincronizarCard(el, produto) {
     if (!el.editados.includes(chave)) campos[chave] = novos[chave];
   }
   return { ...el, campos };
+}
+
+// Cards vazios na ordem de leitura (de cima para baixo, da esquerda para a direita)
+export function cardsVazios(doc) {
+  return doc.elementos
+    .filter(e => e.tipo === 'produto' && !e.oculto && !e.produtoId && !e.campos.nome)
+    .sort((a, b) => (Math.abs(a.y - b.y) > 20 ? a.y - b.y : a.x - b.x));
+}
+
+// Preenche os cards vazios com uma lista de produtos; devolve o documento novo
+export function preencherDocumento(doc, produtos) {
+  const vazios = cardsVazios(doc);
+  const mapa = {};
+  produtos.slice(0, vazios.length).forEach((p, i) => { mapa[vazios[i].id] = p; });
+  return {
+    ...doc,
+    elementos: doc.elementos.map(e => (mapa[e.id]
+      ? { ...e, produtoId: mapa[e.id].id, editados: [], campos: camposDoProduto(mapa[e.id]) }
+      : e))
+  };
 }
 
 // Para salvar como modelo: esvazia os cards (viram espaços para produtos)

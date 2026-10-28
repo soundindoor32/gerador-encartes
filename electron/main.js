@@ -234,7 +234,7 @@ function registrarHandlers() {
   // Salva um arquivo exportado (PNG, JPG ou PDF) escolhendo o local
   registrar('exportar:salvar', async (bytes, nomeSugerido, extensao) => {
     exigirBanco();
-    const nomes = { png: 'Imagem PNG', jpg: 'Imagem JPG', pdf: 'Documento PDF' };
+    const nomes = { png: 'Imagem PNG', jpg: 'Imagem JPG', pdf: 'Documento PDF', zip: 'Arquivo ZIP' };
     const d = await dialog.showSaveDialog(janela, {
       title: 'Salvar encarte',
       defaultPath: path.join(pastaDados, 'exportados', `${nomeSugerido}.${extensao}`),
