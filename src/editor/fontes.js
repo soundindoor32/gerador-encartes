@@ -19,6 +19,8 @@ import '@fontsource/lilita-one/latin-400.css';
 import '@fontsource/barlow-condensed/latin-500.css';
 import '@fontsource/barlow-condensed/latin-700.css';
 import '@fontsource/barlow-condensed/latin-800.css';
+import '@fontsource/alfa-slab-one/latin-400.css';
+import '@fontsource/kaushan-script/latin-400.css';
 
 export const FONTES = [
   { familia: 'Montserrat', pesos: ['400', '700', '800', '900'] },
@@ -29,13 +31,22 @@ export const FONTES = [
   { familia: 'Poppins', pesos: ['400', '600', '800', '900'] },
   { familia: 'Roboto Condensed', pesos: ['400', '700'] },
   { familia: 'Lilita One', pesos: ['400'] },
-  { familia: 'Barlow Condensed', pesos: ['500', '700', '800'] }
+  { familia: 'Barlow Condensed', pesos: ['500', '700', '800'] },
+  { familia: 'Alfa Slab One', pesos: ['400'] },
+  { familia: 'Kaushan Script', pesos: ['400'] }
 ];
 
 export const NOMES_PESOS = { '400': 'Normal', '500': 'Médio', '600': 'Seminegrito', '700': 'Negrito', '800': 'Extra negrito', '900': 'Black' };
 
 export function pesosDa(familia) {
   return FONTES.find(f => f.familia === familia)?.pesos || ['400'];
+}
+
+// Maior peso disponível até o alvo (evita negrito "falso" em fontes de peso único)
+export function pesoAte(familia, alvo) {
+  const pesos = pesosDa(familia);
+  const ate = pesos.filter(p => Number(p) <= Number(alvo));
+  return ate.length ? ate[ate.length - 1] : pesos[0];
 }
 
 // O canvas só desenha com a fonte certa depois que ela foi carregada

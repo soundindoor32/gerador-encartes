@@ -434,3 +434,5 @@ textarea { resize: vertical; }
   .painel-esquerdo, .painel-direito { display: none; }
   .editor-topo { flex-wrap: wrap; }
 }
+.previa-real { border: 1px solid var(--linha); background: #fff; overflow: hidden; border-radius: 3px; }
+.grade-modelos { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }

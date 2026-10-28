@@ -16,7 +16,8 @@ let contador = 0;
 export const novoId = () => `e${Date.now().toString(36)}${(contador++).toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 
 export const ESTILO_CARD_PADRAO = {
-  variante: 'faixa',          // 'faixa' (preço embaixo) | 'selo' (preço em círculo no canto)
+  variante: 'faixa',          // 'faixa' | 'selo' | 'etiqueta' | 'fita' | 'caixa'
+  lado: 'esquerda',           // card 'fita': lado da foto
   corFundo: '#FFFFFF',
   corBorda: '#D8DEE9',
   raio: 14,
@@ -49,6 +50,8 @@ export function criarElemento(tipo, props = {}) {
       w: 300, h: 200, cor: '#0D2C6B', gradiente: null, raio: 0, bordaCor: '#FFFFFF', bordaLargura: 0, sombra: false
     },
     elipse: { w: 200, h: 200, cor: '#FFD21F', gradiente: null, bordaCor: '#FFFFFF', bordaLargura: 0, sombra: false },
+    // pontos normalizados (0 a 1) dentro da largura/altura do elemento
+    poligono: { w: 400, h: 200, pontos: [[0, 0.25], [1, 0], [1, 0.75], [0, 1]], cor: '#7DB548', gradiente: null, bordaCor: '#FFFFFF', bordaLargura: 0, sombra: false },
     raios: { w: 600, h: 400, cor1: '#0D3A9A', cor2: '#1650C2', quantidade: 28, centroX: 0.5, centroY: 0.45 },
     linha: { w: 400, h: 4, cor: '#FFFFFF', espessura: 2, tracejado: true },
     icone: { w: 64, h: 64, icone: 'carrinho', cor: '#0D2C6B', corInterna: '#FFFFFF' },
@@ -112,7 +115,7 @@ export function clonarElementos(lista, deslocamento = 20) {
 }
 
 export const NOMES_TIPOS = {
-  texto: 'Texto', retangulo: 'Retângulo', elipse: 'Círculo', raios: 'Raios', linha: 'Linha',
+  texto: 'Texto', retangulo: 'Retângulo', elipse: 'Círculo', poligono: 'Forma', raios: 'Raios', linha: 'Linha',
   icone: 'Ícone', imagem: 'Imagem', logo: 'Logo da loja', produto: 'Card de produto'
 };
 

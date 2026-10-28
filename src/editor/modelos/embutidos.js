@@ -131,8 +131,126 @@ function casaQuadrado() {
   return doc;
 }
 
+// ---------- Grade genérica de cards ----------
+function grade({ x0, y0, colunas, linhas, w, h, gapX, gapY, estilo, nome }) {
+  const cards = [];
+  for (let l = 0; l < linhas; l += 1) {
+    for (let c = 0; c < colunas; c += 1) {
+      cards.push(el('produto', {
+        x: x0 + c * (w + gapX), y: y0 + l * (h + gapY), w, h,
+        estilo: { ...ESTILO_CARD_PADRAO, ...estilo }, nome: `${nome} ${l * colunas + c + 1}`
+      }));
+    }
+  }
+  return cards;
+}
+
+// ---------- Modelo 3: Fim de semana da Carne (grade 4x4, etiqueta vermelha) ----------
+function carneGrade() {
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'a4'), '#FFFFFF');
+  const E = doc.elementos;
+  const VERM = '#C8102E';
+
+  // Cabeçalho: fundos de reserva (azulejo azul + mesa de madeira) e espaço para a foto
+  E.push(el('retangulo', { x: 0, y: 0, w: 1240, h: 300, gradiente: { cor1: '#2B5BA8', cor2: '#6F94CF', angulo: 90 }, bloqueado: true, nome: 'Fundo azul do cabeçalho' }));
+  E.push(el('retangulo', { x: 0, y: 300, w: 1240, h: 110, gradiente: { cor1: '#9C6A3C', cor2: '#6E4524', angulo: 90 }, bloqueado: true, nome: 'Mesa de madeira' }));
+  E.push(el('imagem', { x: 0, y: 0, w: 1240, h: 410, ajuste: 'cover', bloqueado: true, nome: 'Foto do cabeçalho' }));
+  E.push(el('elipse', { x: 845, y: -60, w: 440, h: 360, cor: '#FFFFFF', bordaCor: '#2B5BA8', bordaLargura: 10, bloqueado: true, nome: 'Moldura da foto redonda' }));
+  E.push(el('imagem', { x: 870, y: -30, w: 390, h: 310, ajuste: 'cover', raio: 155, nome: 'Foto redonda (churrasco)' }));
+
+  E.push(el('texto', { x: 320, y: 18, w: 600, texto: 'Fim de semana da', fonte: 'Kaushan Script', peso: '400', tamanho: 52, cor: VERM, alinhamento: 'center', contornoCor: '#FFFFFF', contornoLargura: 8 }));
+  E.push(el('texto', { x: 280, y: 58, w: 680, texto: 'Carne', fonte: 'Kaushan Script', peso: '400', tamanho: 170, cor: '#FFFFFF', alinhamento: 'center', contornoCor: VERM, contornoLargura: 12, sombraCor: '#5A0A12', sombraY: 6, alturaLinha: 1 }));
+  E.push(el('logo', { x: 470, y: 228, w: 300, h: 110 }));
+  E.push(el('texto', {
+    x: 420, y: 338, w: 420, texto: 'uhh Churrasco...', fonte: 'Kaushan Script', peso: '400', tamanho: 46, cor: VERM,
+    alinhamento: 'center', fundo: '#FFFFFF', fundoRaio: 6, fundoPadding: 8, fundoSombra: true, rotacao: -2
+  }));
+
+  E.push(...grade({
+    x0: 30, y0: 436, colunas: 4, linhas: 4, w: 280, h: 284, gapX: 20, gapY: 20, nome: 'carne',
+    estilo: {
+      variante: 'etiqueta', fonteNome: 'Alfa Slab One', tamanhoNome: 40, tamanhoDescricao: 18,
+      corNome: VERM, corDescricao: '#7A0B19', corPrecoFundo: VERM, corPrecoTexto: '#FFE600',
+      fontePreco: 'Anton', maiusculas: false
+    }
+  }));
+
+  E.push(el('retangulo', { x: 0, y: 1674, w: 1240, h: 80, cor: '#1A1A1A', nome: 'Faixa da validade' }));
+  E.push(el('texto', { x: 20, y: 1692, w: 1200, texto: 'PROMOÇÃO VÁLIDA PARA OS DIAS 17 E 18/08', fonte: 'Archivo Black', peso: '400', tamanho: 40, cor: '#FFFFFF', alinhamento: 'center' }));
+  return doc;
+}
+
+// ---------- Modelo 4: Quarta Verde (duas colunas, preço em fita) ----------
+function quartaVerde() {
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'a4'), '#F6F6F1');
+  const E = doc.elementos;
+  const VERDE = '#7DB548', VERDE_ESC = '#3F7A1F', CINZA = '#3A3A3A';
+
+  // Formas verdes de fundo
+  E.push(el('poligono', { x: 640, y: 0, w: 600, h: 520, pontos: [[0.12, 0], [1, 0], [1, 1], [0, 0.62]], cor: VERDE, bloqueado: true, nome: 'Forma verde do topo' }));
+  E.push(el('imagem', { x: 700, y: 0, w: 540, h: 400, ajuste: 'cover', nome: 'Foto de destaque' }));
+  E.push(el('poligono', { x: 0, y: 1380, w: 560, h: 374, pontos: [[0, 0], [1, 1], [0, 1]], cor: VERDE, opacidade: 0.9, bloqueado: true, nome: 'Forma verde inferior esquerda' }));
+  E.push(el('poligono', { x: 760, y: 1500, w: 480, h: 254, pontos: [[1, 0], [1, 1], [0, 1]], cor: VERDE, opacidade: 0.9, bloqueado: true, nome: 'Forma verde inferior direita' }));
+  E.push(el('poligono', { x: 0, y: 0, w: 90, h: 420, pontos: [[0, 0], [1, 0], [0, 1]], cor: '#D7261E', opacidade: 0.85, bloqueado: true, nome: 'Detalhe vermelho' }));
+
+  E.push(el('texto', { x: 110, y: 26, w: 560, texto: 'Show de ofertas', fonte: 'Kaushan Script', peso: '400', tamanho: 58, cor: '#5A9A2A', alinhamento: 'center' }));
+  E.push(el('texto', { x: 60, y: 92, w: 660, texto: 'Quarta', fonte: 'Anton', peso: '400', tamanho: 220, cor: CINZA, alinhamento: 'center', alturaLinha: 0.95 }));
+  E.push(el('texto', { x: 60, y: 300, w: 660, texto: 'verde', fonte: 'Anton', peso: '400', tamanho: 220, cor: VERDE, alinhamento: 'center', alturaLinha: 0.95 }));
+  E.push(el('logo', { x: 250, y: 520, w: 300, h: 120 }));
+  E.push(el('texto', { x: 600, y: 552, w: 340, texto: 'OFERTAS VÁLIDAS\n16/01', fonte: 'Archivo Black', peso: '400', tamanho: 28, cor: '#222222', alinhamento: 'center', alturaLinha: 1.15 }));
+
+  const estilo = {
+    variante: 'fita', fonteNome: 'Oswald', tamanhoNome: 50, tamanhoDescricao: 26, corNome: VERDE_ESC,
+    corDescricao: VERDE_ESC, corPrecoFundo: VERDE, corPrecoTexto: '#FFFFFF', fontePreco: 'Anton', maiusculas: true
+  };
+  for (let i = 0; i < 4; i += 1) {
+    E.push(el('produto', { x: 0, y: 660 + i * 268, w: 600, h: 255, estilo: { ...ESTILO_CARD_PADRAO, ...estilo, lado: 'esquerda' }, nome: `coluna esquerda ${i + 1}` }));
+    E.push(el('produto', { x: 640, y: 660 + i * 268, w: 600, h: 255, estilo: { ...ESTILO_CARD_PADRAO, ...estilo, lado: 'direita' }, nome: `coluna direita ${i + 1}` }));
+  }
+  return doc;
+}
+
+// ---------- Modelo 5: Churrasco no fogo (caixas brancas, fundo vermelho) ----------
+function churrascoFogo() {
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'a4'), '#222222');
+  const E = doc.elementos;
+  const VERM = '#B3121B';
+
+  E.push(el('retangulo', { x: 0, y: 0, w: 1240, h: 1180, gradiente: { cor1: '#D9201A', cor2: '#F7941D', angulo: 90 }, bloqueado: true, nome: 'Fundo vermelho' }));
+  E.push(el('imagem', { x: 0, y: 0, w: 1240, h: 1180, ajuste: 'cover', bloqueado: true, nome: 'Foto de fundo (fogo)' }));
+  E.push(el('retangulo', { x: 0, y: 1180, w: 1240, h: 470, gradiente: { cor1: '#2A2A2A', cor2: '#141414', angulo: 90 }, bloqueado: true, nome: 'Fundo escuro' }));
+
+  E.push(el('elipse', { x: 400, y: -190, w: 440, h: 400, cor: '#FFFFFF', sombra: true, bloqueado: true, nome: 'Fundo do logo' }));
+  E.push(el('logo', { x: 450, y: 18, w: 340, h: 160 }));
+  E.push(el('texto', {
+    x: 380, y: 214, w: 480, texto: 'uhh Churrasco...', fonte: 'Kaushan Script', peso: '400', tamanho: 54, cor: VERM,
+    alinhamento: 'center', fundo: '#FFFFFF', fundoRaio: 6, fundoPadding: 10, fundoSombra: true, rotacao: -2
+  }));
+  const tituloFogo = { fonte: 'Alfa Slab One', peso: '400', cor: '#FFFFFF', sombraCor: '#5A0A0A', sombraY: 5, sombraDesfoque: 4, alturaLinha: 1.05 };
+  E.push(el('texto', { ...tituloFogo, x: 26, y: 40, w: 380, texto: 'FIM DE\nSEMANA DA', tamanho: 54 }));
+  E.push(el('texto', { ...tituloFogo, x: 830, y: 50, w: 390, texto: 'CARNE', tamanho: 84, alinhamento: 'right' }));
+
+  const estilo = {
+    variante: 'caixa', fonteNome: 'Alfa Slab One', tamanhoNome: 30, corNome: '#FFFFFF', corFundo: '#FFFFFF',
+    corBorda: '#FFFFFF', raio: 14, corPrecoTexto: '#FFFFFF', fontePreco: 'Anton', alturaImagem: 0.56, maiusculas: true
+  };
+  E.push(...grade({ x0: 30, y0: 330, colunas: 4, linhas: 2, w: 280, h: 300, gapX: 20, gapY: 22, estilo, nome: 'carne' }));
+  E.push(el('produto', { x: 320, y: 1000, w: 600, h: 330, estilo: { ...ESTILO_CARD_PADRAO, ...estilo, tamanhoNome: 40 }, nome: 'destaque' }));
+  E.push(...grade({ x0: 30, y0: 1350, colunas: 3, linhas: 1, w: 380, h: 280, gapX: 25, gapY: 0, estilo, nome: 'mercearia' }));
+
+  E.push(el('retangulo', { x: 0, y: 1650, w: 1240, h: 104, gradiente: { cor1: '#E2231A', cor2: '#9E0F0F', angulo: 0 }, nome: 'Rodapé' }));
+  E.push(el('texto', { x: 30, y: 1662, w: 720, texto: 'PROMOÇÃO VÁLIDA: 18/11', fonte: 'Alfa Slab One', peso: '400', tamanho: 46, cor: '#FFFFFF' }));
+  E.push(el('texto', { x: 30, y: 1716, w: 720, texto: 'Curta nossa página no Facebook', fonte: 'Montserrat', peso: '700', tamanho: 22, cor: '#FFFFFF' }));
+  E.push(el('linha', { x: 770, y: 1666, w: 72, h: 12, cor: '#FFFFFF', espessura: 3, tracejado: false, rotacao: 90 }));
+  E.push(el('texto', { x: 800, y: 1672, w: 420, texto: 'CONTATO: (00) 0000-0000\nWHATSAPP: (00) 00000-0000', fonte: 'Montserrat', peso: '800', tamanho: 24, cor: '#FFFFFF', alturaLinha: 1.25 }));
+  return doc;
+}
+
 export const MODELOS_EMBUTIDOS = [
   { id: 'casa-vertical', nome: 'Sua Casa, vertical com preço em faixa', criar: casaVertical },
   { id: 'casa-quadrado', nome: 'Sua Casa, quadrado com preço em selo', criar: casaQuadrado },
+  { id: 'carne-grade', nome: 'Fim de semana da Carne, grade 4 × 4', criar: carneGrade },
+  { id: 'quarta-verde', nome: 'Quarta Verde, duas colunas com fita', criar: quartaVerde },
+  { id: 'churrasco-fogo', nome: 'Churrasco no fogo, caixas brancas', criar: churrascoFogo },
   ...FORMATOS.map(f => ({ id: `branco-${f.id}`, nome: `Em branco: ${f.nome}`, criar: () => novoDocumento(f), branco: true }))
 ];

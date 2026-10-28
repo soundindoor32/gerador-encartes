@@ -60,6 +60,9 @@ App desktop para Windows, 100% offline. Tudo fica numa pasta escolhida por você
 ## Novo na fase 2: editor de encartes
 
 - Tela **Encartes**: lista com miniaturas, abrir, duplicar, excluir
+- **Modelos novos**: "Fim de semana da Carne" (grade 4 × 4 com etiqueta), "Quarta
+  Verde" (duas colunas com fita) e "Churrasco no fogo" (caixas brancas). Os espaços
+  de foto do cabeçalho/fundo aceitam arrastar uma imagem do computador
 - **Novo encarte** a partir de um modelo: "Sua Casa" vertical (preço em faixa),
   "Sua Casa" quadrado (preço em selo) ou em branco (A4, post, story, 4:5, 2:3)
 - **Editor** com tudo editável: textos (fonte, peso, tamanho, cor, contorno,

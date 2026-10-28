@@ -1,27 +1,36 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { api } from '../api.js';
 import Modal from '../components/Modal.jsx';
+import { Stage, Layer, Rect } from 'react-konva';
 import { MODELOS_EMBUTIDOS } from '../editor/modelos/embutidos.js';
+import { Elemento } from '../editor/Elementos.jsx';
+import { carregarFontes } from '../editor/fontes.js';
 
-function PreviaEmbutida({ modelo }) {
+// Miniatura real do modelo, desenhada com o mesmo motor do editor
+const docsDosModelos = new Map();
+function PreviaEmbutida({ modelo, fontesProntas }) {
+  if (!docsDosModelos.has(modelo.id)) docsDosModelos.set(modelo.id, modelo.criar());
+  const d = docsDosModelos.get(modelo.id);
   if (modelo.branco) {
-    const d = modelo.criar();
     return (
       <div className="previa-modelo branco" style={{ aspectRatio: `${d.largura} / ${d.altura}` }}>
         <span>{d.largura} × {d.altura}</span>
       </div>
     );
   }
-  const quadrado = modelo.id === 'casa-quadrado';
+  const largura = 128;
+  const escala = largura / d.largura;
+  const semEventos = { selecionar() {}, duploClique() {}, fimArrasto() {}, fimTransformacao() {} };
   return (
-    <div className={`previa-modelo desenho ${quadrado ? 'quadrado' : ''}`} style={{ aspectRatio: quadrado ? '1 / 1' : '2 / 3' }}>
-      <div className="p-topo"><span className="p-logo" /><span className="p-titulo" /></div>
-      {[0, 1, 2].map(l => (
-        <div key={l} className="p-linha">
-          {[0, 1, 2, 3, 4].map(c => <span key={c} className={quadrado ? 'p-card selo' : 'p-card faixa'} />)}
-        </div>
-      ))}
-      <div className="p-rodape" />
+    <div className="previa-real" style={{ width: largura, height: d.altura * escala }}>
+      {fontesProntas && (
+        <Stage width={largura} height={d.altura * escala} scaleX={escala} scaleY={escala} listening={false}>
+          <Layer listening={false}>
+            <Rect width={d.largura} height={d.altura} fill={d.fundo.cor} />
+            {d.elementos.map(el => <Elemento key={el.id} el={el} eventos={semEventos} exportando={false} loja={null} realcado={false} />)}
+          </Layer>
+        </Stage>
+      )}
     </div>
   );
 }
@@ -33,6 +42,8 @@ function NovoEncarte({ aoFechar, aoCriar, avisar }) {
   const [meusModelos, setMeusModelos] = useState([]);
   const [escolhido, setEscolhido] = useState({ tipo: 'embutido', id: MODELOS_EMBUTIDOS[0].id });
   const [criando, setCriando] = useState(false);
+  const [fontesProntas, setFontesProntas] = useState(false);
+  useEffect(() => { carregarFontes().then(() => setFontesProntas(true)); }, []);
 
   const carregarModelos = useCallback(() => {
     api('modelos:listar').then(setMeusModelos).catch(() => {});
@@ -120,7 +131,7 @@ function NovoEncarte({ aoFechar, aoCriar, avisar }) {
               className={`modelo-opcao ${escolhido.tipo === 'embutido' && escolhido.id === m.id ? 'ativo' : ''}`}
               onClick={() => setEscolhido({ tipo: 'embutido', id: m.id })}
             >
-              <PreviaEmbutida modelo={m} />
+              <PreviaEmbutida modelo={m} fontesProntas={fontesProntas} />
               <span>{m.nome}</span>
             </button>
           </li>

@@ -241,7 +241,11 @@ function PropsIcone({ el, mudar }) {
 function PropsImagem({ el, mudar, acoes }) {
   return (
     <Grupo>
-      <button className="botao" onClick={() => acoes.trocarImagem(el.id)}>Trocar imagem</button>
+      <p className="ajuda">Dica: arraste uma foto do computador direto para cima deste espaço.</p>
+      <div className="acoes">
+        <button className="botao" onClick={() => acoes.trocarImagem(el.id)}>{el.src ? 'Trocar imagem' : 'Escolher imagem'}</button>
+        {el.src && <button className="botao texto" onClick={() => mudar({ src: null })}>Remover imagem</button>}
+      </div>
       <Opcoes rotulo="Ajuste" valor={el.ajuste} aoMudar={v => mudar({ ajuste: v })}
         opcoes={[{ valor: 'contain', nome: 'Mostrar inteira' }, { valor: 'cover', nome: 'Preencher (corta as sobras)' }]} />
       <Numero rotulo="Cantos arredondados" valor={el.raio} min={0} max={500} aoMudar={v => mudar({ raio: v }, 'raio')} />
@@ -316,14 +320,26 @@ function PropsProduto({ el, mudar, acoes }) {
       </Grupo>
 
       <Grupo titulo="Estilo do card">
-        <Opcoes rotulo="Modelo de preço" valor={s.variante} aoMudar={v => mudarEstilo({ variante: v })}
-          opcoes={[{ valor: 'faixa', nome: 'Faixa embaixo' }, { valor: 'selo', nome: 'Selo redondo no canto' }]} />
+        <Opcoes rotulo="Modelo do card" valor={s.variante} aoMudar={v => mudarEstilo({ variante: v })}
+          opcoes={[
+            { valor: 'faixa', nome: 'Caixa com faixa de preço embaixo' },
+            { valor: 'selo', nome: 'Caixa com selo redondo no canto' },
+            { valor: 'etiqueta', nome: 'Sem caixa, etiqueta de preço sobre a foto' },
+            { valor: 'fita', nome: 'Foto ao lado, preço numa fita' },
+            { valor: 'caixa', nome: 'Foto em caixa, nome e preço embaixo' }
+          ]} />
+        {s.variante === 'fita' && (
+          <Opcoes rotulo="Lado da foto" valor={s.lado || 'esquerda'} aoMudar={v => mudarEstilo({ lado: v })}
+            opcoes={[{ valor: 'esquerda', nome: 'Foto à esquerda' }, { valor: 'direita', nome: 'Foto à direita' }]} />
+        )}
         <div className="duas-colunas">
           <Cor rotulo="Fundo do card" valor={s.corFundo} aoMudar={v => mudarEstilo({ corFundo: v }, 'cf')} />
           <Cor rotulo="Borda" valor={s.corBorda} aoMudar={v => mudarEstilo({ corBorda: v }, 'cb')} />
           <Cor rotulo="Nome" valor={s.corNome} aoMudar={v => mudarEstilo({ corNome: v }, 'cn')} />
           <Cor rotulo="Descrição" valor={s.corDescricao} aoMudar={v => mudarEstilo({ corDescricao: v }, 'cd')} />
-          <Cor rotulo="Fundo do preço" valor={s.corPrecoFundo} aoMudar={v => mudarEstilo({ corPrecoFundo: v }, 'cpf')} />
+          {s.variante !== 'caixa' && (
+            <Cor rotulo={s.variante === 'fita' ? 'Cor da fita' : s.variante === 'etiqueta' ? 'Cor da etiqueta' : 'Fundo do preço'} valor={s.corPrecoFundo} aoMudar={v => mudarEstilo({ corPrecoFundo: v }, 'cpf')} />
+          )}
           <Cor rotulo="Número do preço" valor={s.corPrecoTexto} aoMudar={v => mudarEstilo({ corPrecoTexto: v }, 'cpt')} />
           {s.variante === 'faixa' && <Cor rotulo="Caixa do R$" valor={s.corDestaque} aoMudar={v => mudarEstilo({ corDestaque: v }, 'cde')} />}
         </div>
@@ -434,6 +450,7 @@ export default function PainelPropriedades({ selecionados, doc, mudarElemento, m
     texto: <PropsTexto el={el} mudar={mudar} />,
     retangulo: <PropsForma el={el} mudar={mudar} />,
     elipse: <PropsForma el={el} mudar={mudar} />,
+    poligono: <PropsForma el={el} mudar={mudar} />,
     raios: <PropsRaios el={el} mudar={mudar} />,
     linha: <PropsLinha el={el} mudar={mudar} />,
     icone: <PropsIcone el={el} mudar={mudar} />,
@@ -451,7 +468,7 @@ export default function PainelPropriedades({ selecionados, doc, mudarElemento, m
           <Numero rotulo="X" valor={el.x} aoMudar={v => mudar({ x: v }, 'x')} />
           <Numero rotulo="Y" valor={el.y} aoMudar={v => mudar({ y: v }, 'y')} />
           <Numero rotulo="Largura" valor={el.w} min={5} aoMudar={v => mudar({ w: v, ...(el.tipo === 'icone' ? { h: v } : {}) }, 'w')} />
-          {el.tipo !== 'texto' && el.tipo !== 'linha' && el.tipo !== 'icone' && (
+          {!['texto', 'linha', 'icone'].includes(el.tipo) && (
             <Numero rotulo="Altura" valor={el.h} min={5} aoMudar={v => mudar({ h: v }, 'h')} />
           )}
         </div>

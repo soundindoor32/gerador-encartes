@@ -441,12 +441,20 @@ export default function Editor({ encarteId, aoSair, avisar }) {
       && p.x >= el.x && p.x <= el.x + el.w && p.y >= el.y && p.y <= el.y + el.h);
   }
 
+  // Espaço de imagem sob o ponto (inclusive travado), para soltar fotos de fundo
+  function imagemNoPonto(p) {
+    return [...docRef.current.elementos].reverse().find(el => el.tipo === 'imagem' && !el.oculto && !el.rotacao
+      && p.x >= el.x && p.x <= el.x + el.w && p.y >= el.y && p.y <= el.y + el.h);
+  }
+
   function aoArrastarSobre(e) {
     const tipos = [...e.dataTransfer.types];
     if (!tipos.includes('application/x-produto') && !tipos.includes('Files')) return;
     e.preventDefault();
-    const card = cardNoPonto(pontoNoDocumento(e));
-    setRealce(card?.id || null);
+    const p = pontoNoDocumento(e);
+    const card = cardNoPonto(p);
+    const alvo = card || (tipos.includes('Files') ? imagemNoPonto(p) : null);
+    setRealce(alvo?.id || null);
   }
 
   async function aoSoltar(e) {
@@ -477,7 +485,9 @@ export default function Editor({ encarteId, aoSair, avisar }) {
     const arquivo = e.dataTransfer.files?.[0];
     if (arquivo && /^image\//.test(arquivo.type)) {
       const caminho = caminhoDoArquivo(arquivo);
+      const espaco = card ? null : imagemNoPonto(p);
       if (card) await acoes.trocarImagem(card.id, caminho);
+      else if (espaco) await acoes.trocarImagem(espaco.id, caminho);
       else await acoes.inserirImagem(caminho, p);
     }
   }
