@@ -329,6 +329,38 @@ function PropsProduto({ el, mudar, acoes }) {
             { valor: 'caixa', nome: 'Foto em caixa, nome e preço embaixo' },
             { valor: 'horizontal', nome: 'Caixa horizontal: foto ao lado, preço grande (TV)' }
           ]} />
+        {s.variante === 'etiqueta' && (
+          <>
+            <Opcoes rotulo="Formato do preço" valor={s.formaPreco || 'retangulo'} aoMudar={v => mudarEstilo({ formaPreco: v })}
+              opcoes={[
+                { valor: 'retangulo', nome: 'Etiqueta retangular' },
+                { valor: 'estrela', nome: 'Estrela (explosão)' },
+                { valor: 'circulo', nome: 'Círculo' },
+                { valor: 'fita', nome: 'Fita com recorte' },
+                { valor: 'barra', nome: 'Barra larga embaixo' }
+              ]} />
+            <label className="check">
+              <input type="checkbox" checked={!!s.caixa} onChange={e => mudarEstilo({ caixa: e.target.checked })} />
+              Caixa de fundo atrás do produto
+            </label>
+            <label className="check">
+              <input type="checkbox" checked={!!s.faixaNome} onChange={e => mudarEstilo({ faixaNome: e.target.checked })} />
+              Nome dentro de uma plaquinha
+            </label>
+            {(s.formaPreco === 'circulo') && (
+              <label className="check">
+                <input type="checkbox" checked={!!s.nomeNoSelo} onChange={e => mudarEstilo({ nomeNoSelo: e.target.checked })} />
+                Nome embaixo do círculo
+              </label>
+            )}
+            {(s.faixaNome || s.nomeNoSelo) && <Cor rotulo="Cor da plaquinha" valor={s.corFaixaNome || '#FFFFFF'} aoMudar={v => mudarEstilo({ corFaixaNome: v }, 'cfn')} />}
+            <Cor rotulo="Cor do R$ e da unidade" valor={s.corRS || '#FFFFFF'} aoMudar={v => mudarEstilo({ corRS: v }, 'crs')} />
+            {(s.formaPreco === 'estrela' || s.formaPreco === 'circulo') && (
+              <Deslizante rotulo="Tamanho do selo" valor={s.tamanhoSelo || 0.22} min={0.12} max={0.4} passo={0.01}
+                formatar={v => `${Math.round(v * 100)}%`} aoMudar={v => mudarEstilo({ tamanhoSelo: v }, 'ts')} />
+            )}
+          </>
+        )}
         {s.variante === 'fita' && (
           <Opcoes rotulo="Lado da foto" valor={s.lado || 'esquerda'} aoMudar={v => mudarEstilo({ lado: v })}
             opcoes={[{ valor: 'esquerda', nome: 'Foto à esquerda' }, { valor: 'direita', nome: 'Foto à direita' }]} />

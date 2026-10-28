@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Konva from 'konva';
-import { Group, Rect, Text, Ellipse, Circle, Shape, Line, Path, Image as KImage } from 'react-konva';
+import { Group, Rect, Text, Ellipse, Circle, Star, Shape, Line, Path, Image as KImage } from 'react-konva';
 import { ICONES } from './icones.js';
 import { larguraTexto, partesPreco } from './medidas.js';
 import { urlImagem } from '../api.js';
@@ -376,27 +376,121 @@ function CardVazio({ w, h, s, realcado }) {
   );
 }
 
-// Estilo "etiqueta": nome em cima, foto, etiqueta de preço sobreposta (Fim de semana da Carne)
+// Estilo "etiqueta": nome em cima, foto, preço sobreposto. Opções:
+//   caixa (fundo branco), faixaNome (plaquinha no nome), formaPreco
+//   ('retangulo' | 'estrela' | 'circulo' | 'fita' | 'barra') e nomeNoSelo (nome embaixo do círculo)
 function CardEtiqueta({ el, exportando, realcado, nome }) {
   const { w, h, estilo: s, campos } = el;
+  const forma = s.formaPreco || 'retangulo';
   const pesoNome = pesoAte(s.fonteNome, '800');
-  const yDesc = s.tamanhoNome * 1.02;
+  const pad = s.caixa ? Math.max(8, w * 0.04) : 0;
+  const nomeEmCima = !(s.nomeNoSelo && forma === 'circulo');
+  const larguraUtil = w - pad * 2;
   const temDesc = s.mostrarDescricao && campos.descricao;
-  const yFoto = yDesc + (temDesc ? s.tamanhoDescricao * 1.25 : 4);
-  const hTag = h * 0.22, wTag = w * 0.56;
-  const xTag = w - wTag - w * 0.04, yTag = h - hTag - 2;
+
+  // Nome (com ou sem plaquinha)
+  let yAtual = pad;
+  const elementosNome = [];
+  if (nomeEmCima) {
+    if (s.faixaNome) {
+      const larguraNome = Math.min(larguraUtil, larguraTexto(nome, s.tamanhoNome, s.fonteNome, pesoNome) + s.tamanhoNome * 0.9);
+      elementosNome.push(
+        <Rect key="placa" x={(w - larguraNome) / 2} y={yAtual} width={larguraNome} height={s.tamanhoNome * 1.35}
+          fill={s.corFaixaNome || '#FFFFFF'} cornerRadius={6} shadowColor="#000" shadowBlur={4} shadowOpacity={0.3} shadowOffsetY={1} />
+      );
+      elementosNome.push(
+        <TextoAjustado key="nome" texto={nome} x={(w - larguraNome) / 2 + s.tamanhoNome * 0.3} y={yAtual + s.tamanhoNome * 0.17}
+          largura={larguraNome - s.tamanhoNome * 0.6} tamanho={s.tamanhoNome} fonte={s.fonteNome} peso={pesoNome} cor={s.corNome} />
+      );
+      yAtual += s.tamanhoNome * 1.45;
+    } else {
+      elementosNome.push(
+        <TextoAjustado key="nome" texto={nome} x={pad} y={yAtual} largura={larguraUtil} tamanho={s.tamanhoNome} fonte={s.fonteNome} peso={pesoNome} cor={s.corNome} />
+      );
+      yAtual += s.tamanhoNome * 1.02;
+    }
+    if (temDesc) {
+      elementosNome.push(
+        <TextoAjustado key="desc" texto={campos.descricao} x={pad} y={yAtual} largura={larguraUtil} tamanho={s.tamanhoDescricao}
+          fonte={s.fonteNome} peso={pesoNome} cor={s.corDescricao} />
+      );
+      yAtual += s.tamanhoDescricao * 1.2;
+    } else {
+      yAtual += 4;
+    }
+  }
+
+  // Preço
+  const precoBase = { preco: campos.preco, unidade: campos.unidade, cor: s.corPrecoTexto, fonte: s.fontePreco, mostrarRS: true, corRS: s.corRS || '#FFFFFF', corUn: s.corRS || '#FFFFFF', unidadeEmbaixo: true };
+  let preco = null;
+  let fimFoto = h - pad;
+  if (forma === 'barra') {
+    const hb = h * 0.17;
+    fimFoto = h - pad - hb - 4;
+    preco = (
+      <>
+        <Rect x={pad} y={h - pad - hb} width={larguraUtil} height={hb} fill={s.corPrecoFundo} cornerRadius={6} />
+        <PrecoEmLinha {...precoBase} x={pad} y={h - pad - hb} largura={larguraUtil} altura={hb} escalaBase={0.9} unidadeEmbaixo={false} />
+      </>
+    );
+  } else if (forma === 'estrela' || forma === 'circulo') {
+    const r = Math.min(w, h) * (s.tamanhoSelo || 0.22);
+    const cx = s.nomeNoSelo && forma === 'circulo' ? pad + r + w * 0.02 : w - pad - r - w * 0.01;
+    const cy = s.nomeNoSelo && forma === 'circulo' ? h - pad - r - s.tamanhoNome * 1.3 : h - pad - r;
+    preco = (
+      <>
+        {forma === 'estrela'
+          ? <Star x={cx} y={cy} numPoints={14} innerRadius={r * 0.84} outerRadius={r} fill={s.corPrecoFundo} stroke="#FFFFFF" strokeWidth={2}
+              shadowColor="#000" shadowBlur={6} shadowOpacity={0.35} shadowOffsetY={2} />
+          : <Circle x={cx} y={cy} radius={r} fill={s.corPrecoFundo} stroke="#FFFFFF" strokeWidth={4}
+              shadowColor="#000" shadowBlur={6} shadowOpacity={0.35} shadowOffsetY={2} />}
+        <PrecoEmLinha {...precoBase} x={cx - r * 0.78} y={cy - r * 0.42} largura={r * 1.56} altura={r * 0.84} />
+        {s.nomeNoSelo && forma === 'circulo' && (() => {
+          const tam = s.tamanhoNome * 0.8;
+          const lw = Math.min(w * 0.9, Math.max(r * 1.6, larguraTexto(nome, tam, s.fonteNome, pesoNome) + tam));
+          return (
+            <>
+              <Rect x={cx - lw / 2} y={cy + r * 0.92} width={lw} height={tam * 1.4} fill={s.corFaixaNome || '#C8102E'} cornerRadius={tam * 0.7} />
+              <TextoAjustado texto={nome} x={cx - lw / 2 + tam * 0.4} y={cy + r * 0.92 + tam * 0.2} largura={lw - tam * 0.8}
+                tamanho={tam} fonte={s.fonteNome} peso={pesoNome} cor={s.corNome} />
+            </>
+          );
+        })()}
+      </>
+    );
+  } else if (forma === 'fita') {
+    const hf = h * 0.2, wf = w * 0.64;
+    const xf = w - wf - pad * 0.5, yf = h - hf - pad;
+    preco = (
+      <>
+        <Fita x={xf} y={yf} w={wf + pad * 0.5} h={hf} cor={s.corPrecoFundo} ladoPonta="esquerda" />
+        <PrecoEmLinha {...precoBase} x={xf + hf * 0.25} y={yf} largura={wf - hf * 0.25} altura={hf} />
+      </>
+    );
+  } else {
+    const hTag = h * 0.22, wTag = w * 0.56;
+    const xTag = w - wTag - w * 0.04 - pad * 0.5, yTag = h - hTag - 2 - pad;
+    preco = (
+      <>
+        <Rect x={xTag} y={yTag} width={wTag} height={hTag} fill={s.corPrecoFundo} cornerRadius={8} stroke="#FFFFFF" strokeWidth={2}
+          shadowColor="#000" shadowBlur={6} shadowOpacity={0.35} shadowOffsetY={2} />
+        <PrecoEmLinha {...precoBase} x={xTag} y={yTag} largura={wTag} altura={hTag} />
+      </>
+    );
+    fimFoto = h - pad - hTag * 0.35;
+  }
+
+  const yFoto = nomeEmCima ? yAtual : pad;
+  const hFoto = Math.max(20, (forma === 'barra' ? fimFoto : fimFoto - (forma === 'retangulo' ? 0 : h * 0.08)) - yFoto);
+
   return (
     <>
-      <Rect width={w} height={h} fill="transparent" stroke={realcado ? '#D7261E' : undefined} strokeWidth={3} cornerRadius={8} />
-      <TextoAjustado texto={nome} x={0} y={0} largura={w} tamanho={s.tamanhoNome} fonte={s.fonteNome} peso={pesoNome} cor={s.corNome} />
-      {temDesc && (
-        <TextoAjustado texto={campos.descricao} x={0} y={yDesc} largura={w} tamanho={s.tamanhoDescricao} fonte={s.fonteNome} peso={pesoNome} cor={s.corDescricao} />
-      )}
-      <FotoCard src={campos.imagem} x={w * 0.02} y={yFoto} w={w * 0.96} h={h - yFoto - hTag * 0.35} exportando={exportando} />
-      <Rect x={xTag} y={yTag} width={wTag} height={hTag} fill={s.corPrecoFundo} cornerRadius={8} stroke="#FFFFFF" strokeWidth={2}
-        shadowColor="#000" shadowBlur={6} shadowOpacity={0.35} shadowOffsetY={2} />
-      <PrecoEmLinha preco={campos.preco} unidade={campos.unidade} x={xTag} y={yTag} largura={wTag} altura={hTag}
-        cor={s.corPrecoTexto} fonte={s.fontePreco} mostrarRS corRS="#FFFFFF" corUn="#FFFFFF" unidadeEmbaixo />
+      <Rect width={w} height={h} fill={s.caixa ? s.corFundo : 'transparent'} cornerRadius={s.caixa ? s.raio : 8}
+        stroke={realcado ? '#D7261E' : (s.caixa ? s.corBorda : undefined)} strokeWidth={realcado ? 3 : 1}
+        {...(s.caixa ? { shadowColor: '#000', shadowBlur: 6, shadowOpacity: 0.15, shadowOffsetY: 2 } : {})} />
+      {elementosNome}
+      <FotoCard src={campos.imagem} x={pad + larguraUtil * 0.02} y={yFoto} w={larguraUtil * 0.96} h={hFoto} exportando={exportando} />
+      {preco}
     </>
   );
 }

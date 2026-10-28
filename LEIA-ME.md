@@ -75,6 +75,10 @@ App desktop para Windows, 100% offline. Tudo fica numa pasta escolhida por você
 ## Novo na fase 2: editor de encartes
 
 - Tela **Encartes**: lista com miniaturas, abrir, duplicar, excluir
+- **Datas comemorativas** (Arraiá, Natal, Páscoa, Seleção de Ofertas, Verão),
+  **Churrasco rústico**, **Quarta Verde com selo redondo** e **Lista de ofertas**.
+  O card "etiqueta" ganhou: caixa de fundo, nome em plaquinha e preço em
+  estrela, círculo, fita ou barra
 - **Modelos novos**: "Fim de semana da Carne" (grade 4 × 4 com etiqueta), "Quarta
   Verde" (duas colunas com fita) e "Churrasco no fogo" (caixas brancas). Os espaços
   de foto do cabeçalho/fundo aceitam arrastar uma imagem do computador

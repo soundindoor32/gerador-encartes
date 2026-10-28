@@ -326,6 +326,168 @@ function tvVerticalQuatro() {
   return doc;
 }
 
+// ================= Datas comemorativas: grade 4 × 4 com tema =================
+const TEMAS = {
+  arraia: {
+    nome: 'Nosso Arraiá', fundo: '#0F6E5A', topo1: '#0F8A6E', topo2: '#18A884',
+    titulo: [
+      { texto: 'Nosso', fonte: 'Kaushan Script', tamanho: 80, cor: '#FFFFFF', y: 70 },
+      { texto: 'ARRAIÁ', fonte: 'Lilita One', tamanho: 190, cor: '#FFD21F', contorno: '#7A2E0E', y: 140 },
+      { texto: 'COM PREÇOS BAIXOS', fonte: 'Montserrat', peso: '900', tamanho: 40, cor: '#FFFFFF', y: 335 }
+    ],
+    faixa: '#F28C1B', textoFaixa: '#FFFFFF', rodape: '#0B4F41',
+    card: { formaPreco: 'fita', corPrecoFundo: '#1E8A3C', corPrecoTexto: '#FFFFFF', corNome: '#123B6D' },
+    bandeirinhas: ['#E63946', '#FFD21F', '#2A9D8F', '#F28C1B', '#3A86FF', '#8338EC']
+  },
+  natal: {
+    nome: 'Natal da Economia', fundo: '#FFFFFF', topo1: '#0E6B2E', topo2: '#13873A',
+    titulo: [
+      { texto: 'NATAL', fonte: 'Archivo Black', tamanho: 180, cor: '#FFFFFF', contorno: '#9E0F0F', y: 90 },
+      { texto: 'DA ECONOMIA', fonte: 'Montserrat', peso: '900', tamanho: 64, cor: '#FFD21F', contorno: '#9E0F0F', y: 290 }
+    ],
+    faixa: '#C8102E', textoFaixa: '#FFFFFF', rodape: '#C8102E',
+    card: { formaPreco: 'retangulo', corPrecoFundo: '#13873A', corPrecoTexto: '#FFFFFF', corNome: '#9E0F0F' }
+  },
+  pascoa: {
+    nome: 'Ofertas de Páscoa', fundo: '#F59E1B', topo1: '#F7B32B', topo2: '#F59E1B',
+    titulo: [
+      { texto: 'Ofertas', fonte: 'Kaushan Script', tamanho: 130, cor: '#FFFFFF', contorno: '#6B2D0C', y: 80 },
+      { texto: 'de Páscoa', fonte: 'Kaushan Script', tamanho: 100, cor: '#FFFFFF', contorno: '#6B2D0C', y: 220 }
+    ],
+    faixa: '#5A1E0A', textoFaixa: '#FFFFFF', rodape: '#5A1E0A',
+    card: { formaPreco: 'estrela', corPrecoFundo: '#4A1A08', corPrecoTexto: '#FFFFFF', corNome: '#5A1E0A' }
+  },
+  selecao: {
+    nome: 'Seleção de Ofertas', fundo: '#F2F2F2', topo1: '#B5402A', topo2: '#D9582F',
+    titulo: [
+      { texto: 'Seleção', fonte: 'Montserrat', peso: '900', tamanho: 120, cor: '#FFFFFF', y: 100 },
+      { texto: 'de Ofertas', fonte: 'Montserrat', peso: '800', tamanho: 84, cor: '#FFFFFF', y: 230 }
+    ],
+    faixa: '#7A1E12', textoFaixa: '#FFFFFF', rodape: '#7A1E12',
+    card: { formaPreco: 'estrela', corPrecoFundo: '#5A0F1C', corPrecoTexto: '#FFFFFF', corNome: '#5A0F1C' }
+  },
+  verao: {
+    nome: 'Verão da Economia', fundo: '#FFC93C', topo1: '#2EA8E0', topo2: '#7FD3F5',
+    titulo: [
+      { texto: 'Verão', fonte: 'Lilita One', tamanho: 170, cor: '#FFD21F', contorno: '#C8102E', y: 70 },
+      { texto: 'da Economia', fonte: 'Kaushan Script', tamanho: 80, cor: '#FFFFFF', contorno: '#0B5F8A', y: 255 }
+    ],
+    faixa: '#0B5F8A', textoFaixa: '#FFFFFF', rodape: '#0B5F8A',
+    card: { formaPreco: 'fita', corPrecoFundo: '#1E8A3C', corPrecoTexto: '#FFFFFF', corNome: '#0B3A5A' }
+  }
+};
+
+function gradeTematica(chave) {
+  const t = TEMAS[chave];
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'a4'), t.fundo);
+  const E = doc.elementos;
+  E.push(el('raios', { x: 0, y: 0, w: 1240, h: 470, cor1: t.topo1, cor2: t.topo2, quantidade: 34, centroX: 0.32, centroY: 0.45, bloqueado: true, nome: 'Fundo do cabeçalho' }));
+  E.push(el('imagem', { x: 0, y: 0, w: 1240, h: 470, ajuste: 'cover', bloqueado: true, nome: 'Arte ou foto do cabeçalho' }));
+  if (t.bandeirinhas) {
+    for (let i = 0; i < 21; i += 1) {
+      E.push(el('poligono', { x: i * 60, y: 0, w: 56, h: 64, pontos: [[0, 0], [1, 0], [0.5, 1]], cor: t.bandeirinhas[i % t.bandeirinhas.length], bloqueado: true, nome: 'Bandeirinha' }));
+    }
+  }
+  t.titulo.forEach(l => E.push(el('texto', {
+    x: 40, y: l.y, w: 760, texto: l.texto, fonte: l.fonte, peso: l.peso || '400', tamanho: l.tamanho, cor: l.cor,
+    alinhamento: 'center', alturaLinha: 1, contornoCor: l.contorno || AZUL, contornoLargura: l.contorno ? 10 : 0,
+    sombraCor: '#00000088', sombraY: l.contorno ? 6 : 3, rotacao: -3
+  })));
+  E.push(el('elipse', { x: 850, y: 50, w: 340, h: 250, cor: BRANCO, sombra: true, nome: 'Fundo do logo' }));
+  E.push(el('logo', { x: 880, y: 85, w: 280, h: 180 }));
+  E.push(el('texto', { x: 830, y: 320, w: 380, texto: 'OS MENORES PREÇOS\nEM UM SÓ LUGAR', tamanho: 30, peso: '900', cor: BRANCO, alinhamento: 'center', sombraCor: '#00000088', sombraY: 3, alturaLinha: 1.1 }));
+
+  E.push(el('retangulo', { x: 0, y: 470, w: 1240, h: 62, cor: t.faixa, nome: 'Faixa de validade' }));
+  E.push(el('texto', { x: 20, y: 484, w: 1200, texto: 'PROMOÇÃO VÁLIDA DE 00/00/0000 A 00/00/0000', tamanho: 32, peso: '900', cor: t.textoFaixa, alinhamento: 'center' }));
+
+  const estilo = {
+    variante: 'etiqueta', caixa: true, corFundo: '#FFFFFF', corBorda: '#E5E7EB', raio: 10,
+    fonteNome: 'Montserrat', tamanhoNome: 19, tamanhoDescricao: 14, corDescricao: '#555555',
+    fontePreco: 'Anton', maiusculas: true, ...t.card
+  };
+  E.push(...grade({ x0: 30, y0: 548, colunas: 4, linhas: 4, w: 283, h: 270, gapX: 16, gapY: 10, estilo, nome: 'oferta' }));
+
+  E.push(el('retangulo', { x: 0, y: 1680, w: 1240, h: 74, cor: t.rodape, nome: 'Rodapé' }));
+  E.push(el('icone', { x: 330, y: 1695, w: 44, h: 44, icone: 'local', cor: BRANCO }));
+  E.push(el('texto', { x: 384, y: 1698, w: 700, texto: 'COLOQUE SEU ENDEREÇO AQUI', tamanho: 34, peso: '900', cor: BRANCO }));
+  return doc;
+}
+
+// ================= Churrasco rústico (fundo escuro, plaquinhas brancas) =================
+function churrascoRustico() {
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'a4'), '#1E1B18');
+  const E = doc.elementos;
+  E.push(el('retangulo', { x: 0, y: 0, w: 1240, h: 1754, gradiente: { cor1: '#2B2520', cor2: '#141210', angulo: 90 }, bloqueado: true, nome: 'Fundo escuro' }));
+  E.push(el('imagem', { x: 0, y: 0, w: 1240, h: 1754, ajuste: 'cover', bloqueado: true, nome: 'Foto de fundo (madeira, churrasco)' }));
+  E.push(el('texto', { x: 760, y: 20, w: 460, texto: 'PROMOÇÃO VÁLIDA DIAS 00 E 00/00', tamanho: 22, peso: '900', cor: BRANCO, alinhamento: 'right' }));
+  E.push(el('elipse', { x: 400, y: 40, w: 440, h: 230, cor: BRANCO, sombra: true, nome: 'Fundo do logo' }));
+  E.push(el('logo', { x: 440, y: 60, w: 360, h: 190 }));
+  E.push(el('texto', {
+    x: 430, y: 262, w: 380, texto: 'uhh Churrasco...', fonte: 'Kaushan Script', peso: '400', tamanho: 46, cor: '#B3121B',
+    alinhamento: 'center', fundo: BRANCO, fundoRaio: 6, fundoPadding: 8, fundoSombra: true, rotacao: -2
+  }));
+  E.push(...grade({
+    x0: 30, y0: 360, colunas: 4, linhas: 4, w: 283, h: 330, gapX: 16, gapY: 14, nome: 'carne',
+    estilo: {
+      variante: 'etiqueta', faixaNome: true, corFaixaNome: '#FFFFFF', fonteNome: 'Alfa Slab One', tamanhoNome: 26,
+      corNome: '#B3121B', corDescricao: '#FFFFFF', corPrecoFundo: '#C8102E', corPrecoTexto: '#FFE600',
+      fontePreco: 'Anton', maiusculas: false, formaPreco: 'retangulo'
+    }
+  }));
+  return doc;
+}
+
+// ================= Quarta Verde com selo redondo =================
+function quartaVerdeCircular() {
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'a4'), '#FFFFFF');
+  const E = doc.elementos;
+  E.push(el('imagem', { x: 0, y: 170, w: 1240, h: 1400, ajuste: 'cover', bloqueado: true, nome: 'Fundo (madeira ou textura)' }));
+  E.push(el('retangulo', { x: 0, y: 0, w: 1240, h: 170, cor: '#C8102E', bloqueado: true, nome: 'Faixa vermelha do topo' }));
+  E.push(el('retangulo', { x: 0, y: 0, w: 170, h: 170, cor: '#3BAA35', bloqueado: true, nome: 'Quadrado verde' }));
+  E.push(el('icone', { x: 45, y: 45, w: 80, h: 80, icone: 'coracao', cor: BRANCO }));
+  E.push(el('elipse', { x: 200, y: 8, w: 340, h: 154, cor: BRANCO, nome: 'Fundo do logo' }));
+  E.push(el('logo', { x: 230, y: 20, w: 280, h: 130 }));
+  E.push(el('texto', { x: 600, y: 32, w: 620, texto: 'QUALIDADE E\nPREÇO BAIXO', fonte: 'Archivo Black', peso: '400', tamanho: 54, cor: BRANCO, alinhamento: 'left', alturaLinha: 1.05 }));
+  E.push(el('texto', { x: 40, y: 182, w: 600, texto: 'QUARTA VERDE', fonte: 'Oswald', peso: '700', tamanho: 34, cor: '#3BAA35', espacamento: 8 }));
+  E.push(...grade({
+    x0: 30, y0: 240, colunas: 3, linhas: 3, w: 380, h: 430, gapX: 20, gapY: 14, nome: 'hortifruti',
+    estilo: {
+      variante: 'etiqueta', formaPreco: 'circulo', nomeNoSelo: true, corFaixaNome: '#C8102E', fonteNome: 'Montserrat',
+      tamanhoNome: 30, corNome: '#FFFFFF', corPrecoFundo: '#1E1E1E', corPrecoTexto: '#FFFFFF', fontePreco: 'Anton',
+      tamanhoSelo: 0.2, maiusculas: true, mostrarDescricao: false
+    }
+  }));
+  E.push(el('retangulo', { x: 0, y: 1570, w: 1240, h: 130, cor: '#0E2A6B', nome: 'Faixa do slogan' }));
+  E.push(el('texto', { x: 20, y: 1604, w: 1200, texto: 'LUGAR DE COMPRAR + BARATO SEMPRE', fonte: 'Archivo Black', peso: '400', tamanho: 46, cor: BRANCO, alinhamento: 'center', alturaLinha: 1.4 }));
+  E.push(el('retangulo', { x: 0, y: 1700, w: 1240, h: 54, cor: '#3BAA35', nome: 'Faixa de validade' }));
+  E.push(el('texto', { x: 20, y: 1712, w: 1200, texto: 'OFERTAS VÁLIDAS SOMENTE PARA 00/00/0000', tamanho: 28, peso: '900', cor: BRANCO, alinhamento: 'center', espacamento: 2 }));
+  return doc;
+}
+
+// ================= Lista de ofertas (barra de preço completa) =================
+function listaOfertas() {
+  const doc = novoDocumento(FORMATOS.find(f => f.id === 'a4'), '#FFFFFF');
+  const E = doc.elementos;
+  E.push(el('retangulo', { x: 0, y: 0, w: 1240, h: 300, gradiente: { cor1: '#3A1F14', cor2: '#1A0F0A', angulo: 0 }, bloqueado: true, nome: 'Fundo do topo' }));
+  E.push(el('imagem', { x: 0, y: 0, w: 1240, h: 300, ajuste: 'cover', bloqueado: true, nome: 'Foto do cabeçalho' }));
+  E.push(el('texto', { x: 40, y: 30, w: 700, texto: 'FIM DE SEMANA\nDA CARNE', fonte: 'Oswald', peso: '700', tamanho: 96, cor: '#FFD21F', alturaLinha: 0.98, sombraCor: '#000000', sombraY: 4, sombraDesfoque: 6 }));
+  E.push(el('texto', { x: 40, y: 246, w: 700, texto: 'Ofertas válidas de 00 a 00/00', fonte: 'Montserrat', peso: '700', tamanho: 26, cor: BRANCO }));
+  E.push(el('elipse', { x: 820, y: 80, w: 380, h: 200, cor: BRANCO, sombra: true, nome: 'Fundo do logo' }));
+  E.push(el('logo', { x: 860, y: 100, w: 300, h: 160 }));
+  E.push(el('texto', { x: 800, y: 24, w: 420, texto: 'ZAP OFERTAS: (00) 00000-0000', fonte: 'Montserrat', peso: '800', tamanho: 22, cor: BRANCO, alinhamento: 'center' }));
+  E.push(...grade({
+    x0: 30, y0: 330, colunas: 4, linhas: 4, w: 283, h: 318, gapX: 16, gapY: 14, nome: 'oferta',
+    estilo: {
+      variante: 'etiqueta', formaPreco: 'barra', fonteNome: 'Oswald', tamanhoNome: 30, tamanhoDescricao: 18,
+      corNome: '#C8102E', corDescricao: '#333333', corPrecoFundo: '#C8102E', corPrecoTexto: '#FFFFFF', corRS: '#FFFFFF',
+      fontePreco: 'Oswald', maiusculas: true
+    }
+  }));
+  E.push(el('retangulo', { x: 0, y: 1680, w: 1240, h: 74, gradiente: { cor1: '#3A1F14', cor2: '#C8102E', angulo: 0 }, nome: 'Rodapé' }));
+  E.push(el('texto', { x: 20, y: 1688, w: 1200, texto: 'Final de semana de boa é aqui!', fonte: 'Kaushan Script', peso: '400', tamanho: 46, cor: BRANCO, alinhamento: 'center' }));
+  return doc;
+}
+
 export const MODELOS_EMBUTIDOS = [
   { id: 'casa-vertical', nome: 'Sua Casa, vertical com preço em faixa', criar: casaVertical },
   { id: 'casa-quadrado', nome: 'Sua Casa, quadrado com preço em selo', criar: casaQuadrado },
@@ -334,6 +496,14 @@ export const MODELOS_EMBUTIDOS = [
   { id: 'tv-setor', nome: 'TV deitada: setor com 4 ofertas', criar: tvSetor, tv: true },
   { id: 'tv-vertical', nome: 'TV em pé: 4 ofertas', criar: tvVerticalQuatro, tv: true },
   { id: 'carne-grade', nome: 'Fim de semana da Carne, grade 4 × 4', criar: carneGrade },
+  { id: 'tema-arraia', nome: 'Nosso Arraiá, grade 4 × 4', criar: () => gradeTematica('arraia') },
+  { id: 'tema-natal', nome: 'Natal da Economia, grade 4 × 4', criar: () => gradeTematica('natal') },
+  { id: 'tema-pascoa', nome: 'Ofertas de Páscoa, grade 4 × 4', criar: () => gradeTematica('pascoa') },
+  { id: 'tema-selecao', nome: 'Seleção de Ofertas, grade 4 × 4', criar: () => gradeTematica('selecao') },
+  { id: 'tema-verao', nome: 'Verão da Economia, grade 4 × 4', criar: () => gradeTematica('verao') },
+  { id: 'churrasco-rustico', nome: 'Churrasco rústico, fundo escuro', criar: churrascoRustico },
+  { id: 'quarta-verde-circular', nome: 'Quarta Verde, selo redondo', criar: quartaVerdeCircular },
+  { id: 'lista-ofertas', nome: 'Lista de ofertas, barra de preço', criar: listaOfertas },
   { id: 'quarta-verde', nome: 'Quarta Verde, duas colunas com fita', criar: quartaVerde },
   { id: 'churrasco-fogo', nome: 'Churrasco no fogo, caixas brancas', criar: churrascoFogo },
   ...FORMATOS.map(f => ({ id: `branco-${f.id}`, nome: `Em branco: ${f.nome}`, criar: () => novoDocumento(f), branco: true }))
